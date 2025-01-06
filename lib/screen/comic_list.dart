@@ -64,7 +64,7 @@ class _ComicListState extends State<ComicList> {
                     ? Image.network(Comics[index].img)
                     : Image.asset("../assets/images/missing.png"),
                 ListTile(
-                  leading: const Icon(Icons.movie, size: 30),
+                  leading: const Icon(Icons.book, size: 30),
                   title: Text(
                     PCs[index].title,
                     style: TextStyle(

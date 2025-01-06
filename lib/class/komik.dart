@@ -1,33 +1,29 @@
-
-import 'package:uas_komiku/screen/comic_list.dart';
-
 class Komik {
-  int id;
-  String title;
-  String author;
-  String release_at;
-  String img;
-  String description;
-  List? category;
+  final int id;
+  final String title;
+  final String author;
+  final String releaseAt;
+  final String img;
+  final String description;
 
-  Komik(
-      {required this.id,
-      required this.title,
-      required this.author,
-      required this.release_at,
-      required this.img,
-      required this.description,
-      this.category});
+  Komik({
+    required this.id,
+    required this.title,
+    required this.author,
+    required this.releaseAt,
+    required this.img,
+    required this.description,
+  });
 
   factory Komik.fromJson(Map<String, dynamic> json) {
     return Komik(
-        id: json['movie_id'] as int,
-        title: json['title'] as String,
-        author: json['author'] as String,
-        release_at: json['release_at'] as String,
-        img: json['img'] != null ? json['img'].toString() : '',
-        description: json['description'] as String,
-        category: json['category']);
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      title: json['title'] ?? 'Unknown Title',
+      author: json['author'] ?? 'Unknown Author',
+      releaseAt: json['released_at'] ?? 'Unknown Release Date',
+      img: json['img'] ?? '',
+      description: json['description'] ?? 'No Description',
+    );
   }
 }
 
