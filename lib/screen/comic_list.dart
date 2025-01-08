@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:uas_komiku/class/komik.dart';
+import 'package:uas_komiku/screen/comic_detail.dart';
 
 class ComicList extends StatefulWidget {
   const ComicList({super.key});
@@ -60,35 +61,47 @@ class _ComicListState extends State<ComicList> {
                 child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Comics[index].img != ''
+                /*Comics[index].img != ''
                     ? Image.network(Comics[index].img)
-                    : Image.asset("../assets/images/missing.png"),
+                    : Image.asset("../assets/images/missing.png"),*/
                 ListTile(
-                  leading: const Icon(Icons.book, size: 30),
+                  leading: Comics[index].img != ''
+                    ? Image.network(
+                        Comics[index].img,
+                        width: 60.0, // Set the desired width
+                        height: 200.0, // Set the desired height
+                        fit: BoxFit.cover, // Ensures the image fits within the bounds
+                      )
+                    : Image.asset(
+                        "../assets/images/missing.png",
+                        width: 60.0, // Set the desired width
+                        height: 200.0, // Set the desired height
+                        fit: BoxFit.cover, // Ensures the image fits within the bounds
+                      ),
                   title: Text(
                     PCs[index].title,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.red[700],
+                      color: Colors.purple[900],
                     ),
                   ),
                   subtitle: Text(Comics[index].description),
-                  // trailing: IconButton(
-                  //   icon: const Icon(Icons.arrow_forward, color: Colors.blue),
-                  //   onPressed: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (context) =>
-                  //             DetailKomik(movieID: PCs[index].id),
-                  //       ),
-                  //     ).then((refresh) {
-                  //       if (refresh == true) {
-                  //         refreshMovie();
-                  //       }
-                  //     });
-                  //   },
-                  // ),
+                   trailing: IconButton(
+                     icon: const Icon(Icons.arrow_forward, color: Colors.blue),
+                     onPressed: () {
+                       Navigator.push(
+                         context,
+                         MaterialPageRoute(
+                           builder: (context) =>
+                               DetailComic(comicID: PCs[index].id),
+                         ),
+                       ).then((refresh) {
+                         if (refresh == true) {
+                           refreshMovie();
+                         }
+                       });
+                     },
+                   ),
                 ),
               ],
             ));
@@ -107,7 +120,11 @@ class _ComicListState extends State<ComicList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('Komik')),
+        appBar: AppBar(
+          title: const Text('Cari Komik - Baca Komik Disini',
+          style: TextStyle(
+            color: Colors.deepPurple,),
+    )),
         body: ListView(children: <Widget>[
           TextFormField(
             decoration: const InputDecoration(

@@ -5,6 +5,8 @@ class Komik {
   final String releaseAt;
   final String img;
   final String description;
+  List? categories;
+  List? pages;
 
   Komik({
     required this.id,
@@ -13,6 +15,8 @@ class Komik {
     required this.releaseAt,
     required this.img,
     required this.description,
+    this.categories,
+    this.pages,
   });
 
   factory Komik.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class Komik {
       releaseAt: json['released_at'] ?? 'Unknown Release Date',
       img: json['img'] ?? '',
       description: json['description'] ?? 'No Description',
+      categories: json['categories'],
+      pages: json['pages'],
     );
   }
 }

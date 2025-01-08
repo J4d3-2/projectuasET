@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uas_komiku/screen/category_screen.dart';
 import 'package:uas_komiku/screen/comic_list.dart';
 import 'package:uas_komiku/screen/login.dart';
 
@@ -11,13 +12,19 @@ Future<String> checkUser() async {
   return _user_id;
 }
 
+Future<String> userName() async {
+  final prefs = await SharedPreferences.getInstance();
+  String user_name = prefs.getString("user_name") ?? '';
+  return user_name;
+}
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   checkUser().then((String result) {
     if (result == '') {
       runApp(const MyLogin());
     } else {
-      active_user = result;
+      //active_user = result;
       runApp(const MyApp());
     }
   });
@@ -54,8 +61,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   int _currentIndex = 0;
   String _user_id = ""; // Add this line to declare _user_id
-  //final List<Widget> _screens = const [Home(), Search(), History()];
-  final List<String> _title = ['Home', 'Search', 'History'];
+  String _user_name = "";
+  final List<Widget> _screens = const [ComicList(), CategoryList()];
 
   void doLogout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -75,8 +82,15 @@ class _MyHomePageState extends State<MyHomePage> {
     checkUser().then((value) {
       setState(() {
         _user_id = value; // Use the defined _user_id variable
+        active_user = _user_id;
       });
     });
+    userName().then((value) => setState(
+          () {
+            _user_name = value;
+            //active_user = _user_name;
+          },
+        ));
   }
 
   @override
@@ -84,26 +98,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.indigo,
-        titleTextStyle: const TextStyle(color: Colors.white),
-        title: Text(_title[_currentIndex]),
+        titleTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold,),
+        title: Text('KOMIKU'),
       ),
-      //body: _screens[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      body: _screens[_currentIndex],
       drawer: myDrawer(),
-      persistentFooterButtons: <Widget>[
-        ElevatedButton(
-          onPressed: () {},
-          child: const Icon(Icons.skip_previous),
-        ),
-        ElevatedButton(
-          onPressed: () {},
-          child: const Icon(Icons.skip_next),
-        ),
-      ],
       bottomNavigationBar: myBottomNav(),
     );
   }
@@ -117,12 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
           icon: Icon(Icons.home),
         ),
         BottomNavigationBarItem(
-          label: "Search",
+          label: "Cattegory",
           icon: Icon(Icons.search),
-        ),
-        BottomNavigationBarItem(
-          label: "History",
-          icon: Icon(Icons.history),
         ),
       ],
       currentIndex: _currentIndex,
@@ -140,85 +135,17 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Column(
         children: <Widget>[
           UserAccountsDrawerHeader(
-            accountName: Text(_user_id), // Update here
+            accountName: Text(_user_name), // Update here
             accountEmail: Text("$_user_id@gmail.com"),
             currentAccountPicture: const CircleAvatar(
               backgroundImage: NetworkImage("https://i.pravatar.cc/150"),
             ),
           ),
           ListTile(
-            title: const Text("Inbox"),
-            leading: const Icon(Icons.inbox),
-            onTap: () {},
-          ),
-          ListTile(
-            title: const Text("My Basket"),
-            leading: const Icon(Icons.shopping_basket),
-            onTap: () {
-              Navigator.pushNamed(context, "basket");
-            },
-          ),
-          ListTile(
             title: const Text("Comic List"),
             leading: const Icon(Icons.book),
             onTap: () {
               Navigator.pushNamed(context, "ComicList");
-            },
-          ),
-          ListTile(
-            title: const Text("Popular Actor"),
-            leading: const Icon(Icons.people),
-            onTap: () {
-              Navigator.pushNamed(context, "popularActor");
-            },
-          ),
-          ListTile(
-            title: const Text("Add New Movie"),
-            leading: const Icon(Icons.movie_creation_sharp),
-            onTap: () {
-              Navigator.pushNamed(context, "newpopmovie");
-            },
-          ),
-          ListTile(
-            title: const Text("Add Recipe"),
-            leading: const Icon(Icons.add),
-            onTap: () {
-              Navigator.pushNamed(context, "addrecipe");
-            },
-          ),
-          ListTile(
-            title: const Text("Quiz"),
-            leading: const Icon(Icons.quiz),
-            onTap: () {
-              Navigator.pushNamed(context, "quiz");
-            },
-          ),
-          ListTile(
-            title: const Text("About"),
-            leading: const Icon(Icons.help),
-            onTap: () {
-              Navigator.pushNamed(context, "about");
-            },
-          ),
-          ListTile(
-            title: const Text("Animation"),
-            leading: const Icon(Icons.animation),
-            onTap: () {
-              Navigator.pushNamed(context, "animasi");
-            },
-          ),
-          ListTile(
-            title: const Text("Student List"),
-            leading: const Icon(Icons.people),
-            onTap: () {
-              Navigator.pushNamed(context, "studentList");
-            },
-          ),
-          ListTile(
-            title: const Text("Highscore"),
-            leading: const Icon(Icons.score),
-            onTap: () {
-              Navigator.pushNamed(context, "topUser");
             },
           ),
           ListTile(
