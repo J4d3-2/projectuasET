@@ -373,9 +373,6 @@ class EditComicState extends State<EditComic> {
               Padding(
                 padding: EdgeInsets.all(10),
                 child: TextFormField(
-                inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
-                ],
                 decoration: const InputDecoration(
                 labelText: 'Description',
                 ),
@@ -385,7 +382,7 @@ class EditComicState extends State<EditComic> {
                 controller: _descCont,
                 validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Runtime harus diisi';
+                  return 'Description harus diisi';
                 }
                 return null;
                 },
@@ -473,7 +470,7 @@ class EditComicState extends State<EditComic> {
                       return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Image.network("https://ubaya.xyz/flutter/160421021/uas/images"+_pc?.pages?[index]),
+                        Image.network("https://ubaya.xyz/flutter/160421021/uas/"+_pc?.pages?[index]),
                         ElevatedButton(
                           onPressed: () {
                             deleteScene64(_pc!.pages?[index]);
