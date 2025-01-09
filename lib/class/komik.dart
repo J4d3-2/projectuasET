@@ -1,10 +1,10 @@
 class Komik {
-  final int id;
-  final String title;
-  final String author;
-  final String releaseAt;
-  final String img;
-  final String description;
+  int id;
+  String title;
+  String author;
+  String releaseAt;
+  String img;
+  String description;
   List? categories;
   List? pages;
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:uas_komiku/class/category.dart'; // Pastikan ini adalah path untuk model Genre
 import 'comic_list.dart';
@@ -63,7 +64,10 @@ class _CategoryListState extends State<CategoryList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kategori Komik')),
+      appBar: AppBar(
+        title: Text('Kategori Komik',
+        style: GoogleFonts.arvo(color: Colors.deepPurple)),
+      ),
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator()) // Indikator loading
@@ -73,19 +77,29 @@ class _CategoryListState extends State<CategoryList> {
                   itemCount: categories.length,
                   itemBuilder: (context, index) {
                     final category = categories[index];
-                    return ListTile(
-                      title: Text(category.name), // Menggunakan properti Genre
-                      trailing: const Icon(Icons.arrow_forward),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ComicList(
-                                categoryId:
-                                    category.id), // Menggunakan ID dari Genre
-                          ),
-                        );
-                      },
+                    return Container(
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey, width: 1), // Bottom border
+                        ),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          category.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ComicList(
+                                categoryId: category.id,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     );
                   },
                 ),

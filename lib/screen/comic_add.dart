@@ -2,7 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:uas_komiku/class/category.dart';
+import 'package:uas_komiku/class/komik.dart';
 
 class NewComic extends StatefulWidget {
   const NewComic({super.key});
@@ -18,6 +22,14 @@ class _NewComicState extends State<NewComic> {
   String _description = "";
   final _controllerDate = TextEditingController();
   String _img = "";
+  int comicID = 0;
+  bool _isSubmitted = false;
+
+  Komik? _pc;
+
+  Widget comboGenre = Text('Tambah Kategori');
+
+  Uint8List? _imageBytes;
 
   Future<bool> validateImage(String imageUrl) async {
     http.Response res;
@@ -36,9 +48,33 @@ class _NewComicState extends State<NewComic> {
     return false;
   }
 
+  Future<String> fetchData() async {
+    final response = await http.post(
+      Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
+      body: {'id': comicID.toString()});
+    if (response.statusCode == 200) {
+    return response.body;
+    } else {
+    throw Exception('Failed to read API');
+    }
+  }
+
+  bacaData() {
+    fetchData().then((value) {
+    Map json = jsonDecode(value);
+    _pc = Komik.fromJson(json['data']);
+    setState(() {
+      generateComboGenre();
+      if(!_isSubmitted){
+        _isSubmitted = true;
+      }
+    });
+    });
+  }
+
   void submit() async {
     final response = await http
-        .post(Uri.parse("https://ubaya.xyz/flutter/160421021/newcomic.php"), body: {
+        .post(Uri.parse("https://ubaya.xyz/flutter/160421021/uas/newcomic.php"), body: {
       'title': _title,
       'author': _author,
       'release_at': _controllerDate.text,
@@ -48,6 +84,10 @@ class _NewComicState extends State<NewComic> {
     if (response.statusCode == 200) {
       Map json = jsonDecode(response.body);
       if (json['result'] == 'success') {
+        setState(() {
+          comicID = json['id'];
+          bacaData();
+        });
         if (!mounted) return;
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Sukses Menambah Data')));
@@ -59,12 +99,199 @@ class _NewComicState extends State<NewComic> {
     }
   }
 
+   Future<List> daftarGenre() async {
+    Map json;
+    final response = await http.post(
+    Uri.parse("https://ubaya.xyz/flutter/160421021/uas/dropdowncategorylist.php"),
+      body: {'comic_id': comicID.toString()});
+    
+    if (response.statusCode == 200) {
+    print(response.body);
+    json = jsonDecode(response.body);
+    return json['data'];
+    } else {
+    throw Exception('Failed to read API');
+    }
+  }
+
+  void addGenre(genre_id) async {
+    final response = await http.post(
+      Uri.parse("https://ubaya.xyz/flutter/160421021/uas/addcomiccategory.php"),
+      body: {'genre_id': genre_id.toString(), 'comic_id': comicID.toString()
+    });
+    if (response.statusCode == 200) {
+    print(response.body);
+    Map json = jsonDecode(response.body);
+    if (json['result'] == 'success') {
+      ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Sukses menambah Kategori')));
+      setState(() {
+      bacaData();
+      });
+    }
+    } else {
+      throw Exception('Failed to read API');
+    }
+ }
+
+  void deleteGenre(genre_id) async {
+    final response = await http.post(
+      Uri.parse("https://ubaya.xyz/flutter/160421021/uas/deletecomiccategory.php"),
+      body: {'genre_id': genre_id.toString(), 'comic_id': comicID.toString()
+    });
+    if (response.statusCode == 200) {
+    print(response.body);
+    Map json = jsonDecode(response.body);
+    if (json['result'] == 'success') {
+      ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Sukses menghapus Kategori')));
+      setState(() {
+      bacaData();
+      });
+    }
+    } else {
+      throw Exception('Failed to read API');
+    }
+ }
+ 
+  void generateComboGenre() {
+    List<Genre> genres;
+    var data = daftarGenre();
+    data.then((value) {
+    genres = List<Genre>.from(value.map((i) {
+      return Genre.fromJSON(i);}));
+      setState(() {
+      comboGenre = DropdownButton(
+      dropdownColor: Colors.grey[100],
+      hint: const Text("Tambah Kategori"),
+      isDense: false,
+      items: genres.map((gen) {
+        return DropdownMenuItem(
+        value: gen.id,
+        child: Column(children: <Widget>[
+          Text(gen.name, overflow: TextOverflow.visible),
+        ]),
+        );
+      }).toList(),
+      onChanged: (value) {
+        addGenre(value);
+      });
+    }); 
+      });
+  }
+
+  void _showPicker(context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+      return SafeArea(
+        child: Container(
+        color: Colors.white,
+        child: Wrap(
+          children: <Widget>[
+          ListTile(
+            tileColor: Colors.white,
+            leading: const Icon(Icons.photo_library),
+            title: const Text('Galeri'),
+            onTap: () {
+              imgGaleri();
+              Navigator.of(context).pop();
+            }),
+            ListTile(
+            leading: const Icon(Icons.photo_camera),
+            title: const Text('Kamera'),
+            onTap: () {
+              imgKamera();
+              Navigator.of(context).pop();
+            },
+          ),
+          ],
+        ),
+        ),
+      );
+      });
+  }
+
+  imgGaleri() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+      maxHeight: 600,
+      maxWidth: 600);
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        setState(() {
+          _imageBytes = bytes;
+        });
+      }
+  }
+
+  imgKamera() async {
+    final picker = ImagePicker();
+    final image =
+      await picker.pickImage( 
+      source: ImageSource.camera, 
+      imageQuality: 20);
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        setState(() {
+          _imageBytes = bytes;
+        });
+      }
+  }
+
+  void uploadScene64() async {
+    String base64Image = base64Encode(_imageBytes!);
+    final response = await http.post(
+      Uri.parse("https://ubaya.xyz/flutter/160421021/uploadscene64.php"),
+      body: {
+        'comic_id': comicID.toString(),
+        'image': base64Image,
+      },
+    );
+    if (response.statusCode == 200) {
+    Map json = jsonDecode(response.body);
+    if (json['result'] == 'success') {
+          if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Sukses mengupload Scene')));
+        setState(() {
+          _imageBytes = null;
+          bacaData();
+        });
+    }
+    } else {
+    throw Exception('Failed to read API');
+    }
+  }
+
+  void deleteScene64(filepath) async {
+    final response = await http.post(
+      Uri.parse("https://ubaya.xyz/flutter/160421021/deletescene64.php"),
+      body: {'filepath': filepath.toString()
+    });
+    if (response.statusCode == 200) {
+    print(response.body);
+    Map json = jsonDecode(response.body);
+    if (json['result'] == 'success') {
+      ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Sukses menghapus scene')));
+      setState(() {
+        bacaData();
+      });
+    }
+    } else {
+      throw Exception('Failed to read API');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Tambah Komik"),
+          title: Text('Cari Komik - Baca Komik Disini',
+          style: GoogleFonts.arvo(color: Colors.deepPurple)),
         ),
         body: Form(
           key: _formKey,
@@ -142,9 +369,6 @@ class _NewComicState extends State<NewComic> {
                 decoration: const InputDecoration(
                   labelText: 'Deskripsi',
                 ),
-                inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
-                ],
                 onChanged: (value) {
                   _description = value;
                 },
@@ -202,6 +426,34 @@ class _NewComicState extends State<NewComic> {
                   child: Text('Submit'),
                 ),
               ),
+              if (_isSubmitted)
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text('Kategori:'),
+                ),
+              if(_pc != null)
+                Padding(
+                padding: EdgeInsets.all(10),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _pc!.categories!.length ?? 0,
+                  itemBuilder: (BuildContext ctxt, int index) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(_pc!.categories![index]['genre_name']),
+                         ElevatedButton(
+                        onPressed: () {
+                          deleteGenre(_pc!.categories![index]['genre_id']);
+                        },
+                        child: Icon(
+                          Icons.remove_circle_outline,
+                          color: Colors.red,
+                          size: 24.0,
+                        ))
+                          ],
+                    );
+              })),
             ],
           ),)
         ));

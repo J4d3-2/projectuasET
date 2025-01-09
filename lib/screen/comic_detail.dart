@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:uas_komiku/class/komik.dart';
+import 'package:uas_komiku/screen/comic_update.dart';
 
 class DetailComic extends StatefulWidget {
   final int comicID;
@@ -109,6 +110,20 @@ class _DetailComicState extends State<DetailComic> {
             Text(comic!.description),
             const SizedBox(height: 16),
             buildCategories(),
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: ElevatedButton(
+                child: Text('Edit'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EditComic(comicID: widget.comicID),
+                    ),
+                  );
+                },
+              )),
           ],
         ),
       ),

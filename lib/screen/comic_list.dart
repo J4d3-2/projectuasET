@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:uas_komiku/class/komik.dart';
 import 'package:uas_komiku/screen/comic_detail.dart';
@@ -91,7 +92,7 @@ class _ComicListState extends State<ComicList> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: const Icon(Icons.arrow_forward),
+        trailing: Icon(Icons.arrow_forward, color: Colors.purple[900],),
         onTap: () {
           Navigator.push(
             context,
@@ -112,7 +113,8 @@ class _ComicListState extends State<ComicList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cari Komik - Baca Komik Disini'),
+        title: Text('Cari Komik - Baca Komik Disini',
+        style: GoogleFonts.arvo(color: Colors.deepPurple)),
       ),
       body: Column(
         children: [
