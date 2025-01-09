@@ -164,7 +164,7 @@ class EditComicState extends State<EditComic> {
       setState(() {
       comboGenre = DropdownButton(
       dropdownColor: Colors.grey[100],
-      hint: const Text("Tambah Kategori"),
+      hint: const Text("Edit Kategori"),
       isDense: false,
       items: genres.map((gen) {
         return DropdownMenuItem(
@@ -444,10 +444,10 @@ class EditComicState extends State<EditComic> {
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(_pc!.categories![index]['genre_name']),
+                        Text(_pc!.categories![index]['name']),
                          ElevatedButton(
                         onPressed: () {
-                          deleteGenre(_pc!.categories![index]['genre_id']);
+                          deleteGenre(_pc!.categories![index]['id']);
                         },
                         child: Icon(
                           Icons.remove_circle_outline,
@@ -463,17 +463,17 @@ class EditComicState extends State<EditComic> {
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: Text("Pages")),
-              if(_pc != null)
+                if(_pc != null)
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: _pc!.pages!.length,
+                    itemCount: _pc!.pages?.length ?? 0,
                     itemBuilder: (BuildContext ctxt, int index) {
                       return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Image.network("https://ubaya.xyz/flutter/160421021/uas/"+_pc?.pages?[index]),
+                        Image.network("https://ubaya.xyz/flutter/160421021/uas/images"+_pc?.pages?[index]),
                         ElevatedButton(
                           onPressed: () {
                             deleteScene64(_pc!.pages?[index]);

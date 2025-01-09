@@ -27,7 +27,7 @@ class Komik {
       releaseAt: json['released_at'] ?? 'Unknown Release Date',
       img: json['img'] ?? '',
       description: json['description'] ?? 'No Description',
-      categories: json['categories'],
+      categories: json['categories'] ,
       pages: json['pages'],
     );
   }

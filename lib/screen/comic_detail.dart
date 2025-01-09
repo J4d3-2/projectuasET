@@ -80,54 +80,59 @@ class _DetailComicState extends State<DetailComic> {
     if (comic == null) {
       return const Center(child: Text('Tidak ada data.'));
     }
-    return Card(
-      elevation: 10,
-      margin: const EdgeInsets.all(10),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            comic!.img.isNotEmpty
-                ? Image.network(
-                    comic!.img,
-                    width: double.infinity,
-                    height: 300,
-                    fit: BoxFit.cover,
-                  )
-                : const Icon(Icons.image_not_supported, size: 100),
-            const SizedBox(height: 16),
-            Text(
-              comic!.title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children:[
+        Card(
+          elevation: 10,
+          margin: const EdgeInsets.all(10),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                comic!.img.isNotEmpty
+                    ? Image.network(
+                        comic!.img,
+                        width: double.infinity,
+                        height: 300,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(Icons.image_not_supported, size: 100),
+                const SizedBox(height: 16),
+                Text(
+                  comic!.title,
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text('Penulis: ${comic!.author}',
+                    style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 8),
+                Text('Deskripsi:',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(comic!.description),
+                const SizedBox(height: 16),
+                buildCategories(),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: ElevatedButton(
+                    child: Text('Edit'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditComic(comicID: widget.comicID),
+                        ),
+                      );
+                    },
+                  )),
+                  
+              ],
             ),
-            const SizedBox(height: 8),
-            Text('Penulis: ${comic!.author}',
-                style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('Deskripsi:',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(comic!.description),
-            const SizedBox(height: 16),
-            buildCategories(),
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: ElevatedButton(
-                child: Text('Edit'),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EditComic(comicID: widget.comicID),
-                    ),
-                  );
-                },
-              )),
-          ],
-        ),
-      ),
-    );
+          ),
+        )
+      ]);
   }
 
   @override
