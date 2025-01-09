@@ -1,108 +1,136 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:uas_komiku/class/komik.dart';
 
 class DetailComic extends StatefulWidget {
-  int comicID;
-  DetailComic({super.key, required this.comicID});
-  @override
-  State<StatefulWidget> createState() {
-    return _DetailComicState();
-  }
-}
-class _DetailComicState extends State<DetailComic> {
+  final int comicID;
+  const DetailComic({super.key, required this.comicID});
 
-  Komik? _pc;
+  @override
+  State<DetailComic> createState() => _DetailComicState();
+}
+
+class _DetailComicState extends State<DetailComic> {
+  Komik? comic; // Objek komik
+  bool isLoading = true; // Indikator loading
+  String errorMessage = ''; // Pesan error
+
   @override
   void initState() {
     super.initState();
-    bacaData();
+    fetchComicData();
   }
 
- Future<String> fetchData() async {
+  Future<void> fetchComicData() async {
+    try {
       final response = await http.post(
-            Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
-            body: {'id': widget.comicID.toString()});
+        Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
+        body: {'id': widget.comicID.toString()},
+      );
       if (response.statusCode == 200) {
-         return response.body;
+        final data = json.decode(response.body);
+        if (data['result'] == 'success') {
+          setState(() {
+            comic = Komik.fromJson(data['data']);
+          });
+        } else {
+          setState(() {
+            errorMessage = 'Gagal memuat data komik.';
+          });
+        }
       } else {
-         throw Exception('Failed to read API');
+        setState(() {
+          errorMessage =
+              'Error ${response.statusCode}: Tidak dapat menghubungi server.';
+        });
       }
-   }
-
-   bacaData() {
-    fetchData().then((value) {
-      Map json = jsonDecode(value);
-      _pc = Komik.fromJson(json['data']);
-      setState(() {});
-    });
-  }
-
-  void submit() async {
-    final response = await http
-        .post(Uri.parse("https://ubaya.xyz/flutter/160421021/deletemovie.php"), 
-        body: {'id': widget.comicID.toString()});
-    if (response.statusCode == 200) {
-      Map json = jsonDecode(response.body);
-      if (json['result'] == 'success') {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Sukses Menghapus Data')));
-      }
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error')));
-      throw Exception('Failed to read API');
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Kesalahan koneksi: $e';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-Widget tampilData() {
-if (_pc == null) {
-      return const CircularProgressIndicator();
+  Widget buildCategories() {
+    if (comic?.categories == null || comic!.categories!.isEmpty) {
+      return const Text('Tidak ada kategori');
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Kategori:', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8.0,
+          children: comic!.categories!
+              .map((category) => Chip(label: Text(category['name'])))
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget buildDetailCard() {
+    if (comic == null) {
+      return const Center(child: Text('Tidak ada data.'));
     }
     return Card(
-        elevation: 10,
-        margin: const EdgeInsets.all(10),
-        child: Column(children: <Widget>[
-          _pc!.img!=''
-                ? Image.network(_pc!.img,
-                  width: 200, 
-                  height: 300, 
-                  fit: BoxFit.cover) 
-                : Image.asset("../assets/images/missing.png",
-                  width: 60.0, // Set the desired width
-                  height: 200.0, // Set the desired height
-                  fit: BoxFit.cover)
-                ,
-          Text(_pc!.title, style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.purple[900])),
-          Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(_pc!.description, style: const TextStyle(fontSize: 15))),
-            const Padding(padding: EdgeInsets.all(10), child: Text("Categories:")),
-            Padding(
-                padding: const EdgeInsets.all(10),
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _pc?.categories?.length,
-                    itemBuilder: (BuildContext ctxt, int index) {
-                      return Center(
-                        child: Text(_pc?.categories?[index]['name']),
-                      );
-                    })),
-        ]));
-  
-}
+      elevation: 10,
+      margin: const EdgeInsets.all(10),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            comic!.img.isNotEmpty
+                ? Image.network(
+                    comic!.img,
+                    width: double.infinity,
+                    height: 300,
+                    fit: BoxFit.cover,
+                  )
+                : const Icon(Icons.image_not_supported, size: 100),
+            const SizedBox(height: 16),
+            Text(
+              comic!.title,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Penulis: ${comic!.author}',
+                style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 8),
+            Text('Deskripsi:',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(comic!.description),
+            const SizedBox(height: 16),
+            buildCategories(),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Detail of Popular Movie'),
-        ),
-        body: ListView(children: <Widget>[
-          tampilData()
-        ]));
+      appBar: AppBar(
+        title: const Text('Detail Komik'),
+      ),
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator()) // Indikator loading
+          : errorMessage.isNotEmpty
+              ? Center(child: Text(errorMessage)) // Pesan error
+              : ListView(
+                  children: [
+                    buildDetailCard(),
+                  ],
+                ),
+    );
   }
 }

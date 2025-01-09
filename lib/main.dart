@@ -23,23 +23,20 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   checkUser().then((String result) {
     if (result == '') {
-      runApp(const MyLogin());
+      runApp(MyLogin()); // Hapus const di sini
     } else {
-      //active_user = result;
-      runApp(const MyApp());
+      runApp(MyApp()); // Hapus const di sini
     }
   });
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
-        'ComicList': (context) => const ComicList(),
-        'NewComic': (context) => const NewComic(),
+        'ComicList': (context) => ComicList(),
+        'NewComic': (context) => NewComic(),
       },
       title: 'Komiku - Baca Komik',
       theme: ThemeData(
@@ -60,11 +57,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   int _currentIndex = 0;
-  String _user_id = ""; // Add this line to declare _user_id
+  String _user_id = "";
   String _user_name = "";
-  final List<Widget> _screens = const [ComicList(), CategoryList()];
+  final List<Widget> _screens = [
+    ComicList(),
+    CategoryList(), // Tambahkan CategoryList
+  ];
 
   void doLogout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -72,27 +71,18 @@ class _MyHomePageState extends State<MyHomePage> {
     main();
   }
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     checkUser().then((value) {
       setState(() {
-        _user_id = value; // Use the defined _user_id variable
+        _user_id = value;
         active_user = _user_id;
       });
     });
-    userName().then((value) => setState(
-          () {
-            _user_name = value;
-            //active_user = _user_name;
-          },
-        ));
+    userName().then((value) => setState(() {
+          _user_name = value;
+        }));
   }
 
   @override
@@ -100,10 +90,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.indigo,
-        titleTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold,),
-        title: Text('KOMIKU'),
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+        title: const Text('KOMIKU'),
       ),
-      body: _screens[_currentIndex],
+      body: _screens[_currentIndex], // Tampilkan sesuai index
       drawer: myDrawer(),
       bottomNavigationBar: myBottomNav(),
     );
@@ -118,8 +111,8 @@ class _MyHomePageState extends State<MyHomePage> {
           icon: Icon(Icons.home),
         ),
         BottomNavigationBarItem(
-          label: "Cattegory",
-          icon: Icon(Icons.search),
+          label: "Category",
+          icon: Icon(Icons.category), // Ikon kategori
         ),
       ],
       currentIndex: _currentIndex,
@@ -137,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Column(
         children: <Widget>[
           UserAccountsDrawerHeader(
-            accountName: Text(_user_name), // Update here
+            accountName: Text(_user_name),
             accountEmail: Text("$_user_id@gmail.com"),
             currentAccountPicture: const CircleAvatar(
               backgroundImage: NetworkImage("https://i.pravatar.cc/150"),

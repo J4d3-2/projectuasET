@@ -1,148 +1,153 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:uas_komiku/class/komik.dart';
 import 'package:uas_komiku/screen/comic_detail.dart';
 
 class ComicList extends StatefulWidget {
-  const ComicList({super.key});
+  final int? categoryId; // Tambahkan filter kategori (opsional)
+
+  const ComicList({super.key, this.categoryId});
 
   @override
-  State<StatefulWidget> createState() {
-    return _ComicListState();
-  }
+  State<ComicList> createState() => _ComicListState();
 }
 
 class _ComicListState extends State<ComicList> {
-  String _txtcari = '';
+  String searchQuery = '';
+  List<Komik> comics = [];
+  bool isLoading = true;
+  String errorMessage = '';
 
-  String _temp = 'waiting API respond…';
+  Future<void> fetchData() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
 
-  Future<String> fetchData() async {
-    final response = await http.post(
+    try {
+      final response = await http.post(
         Uri.parse("https://ubaya.xyz/flutter/160421021/uas/comiclist.php"),
-        body: {'cari': _txtcari});
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      throw Exception('Failed to read API');
-    }
-  }
-
-  bacaData() {
-    PCs.clear();
-    Future<String> data = fetchData();
-    data.then((value) {
-      Map json = jsonDecode(value);
-      if (json['result'] == 'success') {
-        for (var komik in json['data']) {
-          Komik kom = Komik.fromJson(komik);
-          PCs.add(kom);
+        body: {
+          'cari': searchQuery,
+          if (widget.categoryId != null)
+            'genre_id': widget.categoryId.toString(),
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['result'] == 'success') {
+          setState(() {
+            comics = (data['data'] as List)
+                .map((json) => Komik.fromJson(json))
+                .toList();
+          });
+        } else {
+          setState(() {
+            errorMessage = 'Tidak ada data komik.';
+          });
         }
       } else {
-        PCs.clear();
+        setState(() {
+          errorMessage =
+              'Error ${response.statusCode}: Tidak dapat menghubungi server.';
+        });
       }
-      setState(() {});
-    });
-  }
-
-  void refreshMovie() {
-    // Clear the movie list and fetch the data again
-    PCs.clear();
-    bacaData();
-  }
-
-  Widget DaftarComicList(Comics) {
-    if (Comics != null) {
-      return ListView.builder(
-          itemCount: Comics.length,
-          itemBuilder: (BuildContext ctxt, int index) {
-            return Card(
-                child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                /*Comics[index].img != ''
-                    ? Image.network(Comics[index].img)
-                    : Image.asset("../assets/images/missing.png"),*/
-                ListTile(
-                  leading: Comics[index].img != ''
-                    ? Image.network(
-                        Comics[index].img,
-                        width: 60.0, // Set the desired width
-                        height: 200.0, // Set the desired height
-                        fit: BoxFit.cover, // Ensures the image fits within the bounds
-                      )
-                    : Image.asset(
-                        "../assets/images/missing.png",
-                        width: 60.0, // Set the desired width
-                        height: 200.0, // Set the desired height
-                        fit: BoxFit.cover, // Ensures the image fits within the bounds
-                      ),
-                  title: Text(
-                    PCs[index].title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple[900],
-                    ),
-                  ),
-                  subtitle: Text(Comics[index].description),
-                   trailing: IconButton(
-                     icon: const Icon(Icons.arrow_forward, color: Colors.blue),
-                     onPressed: () {
-                       Navigator.push(
-                         context,
-                         MaterialPageRoute(
-                           builder: (context) =>
-                               DetailComic(comicID: PCs[index].id),
-                         ),
-                       ).then((refresh) {
-                         if (refresh == true) {
-                           refreshMovie();
-                         }
-                       });
-                     },
-                   ),
-                ),
-              ],
-            ));
-          });
-    } else {
-      return const CircularProgressIndicator();
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Kesalahan koneksi: $e';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   void initState() {
     super.initState();
-    bacaData();
+    fetchData();
+  }
+
+  Widget buildComicCard(Komik comic) {
+    return Card(
+      margin: const EdgeInsets.all(8.0),
+      child: ListTile(
+        leading: comic.img.isNotEmpty
+            ? Image.network(
+                comic.img,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+              )
+            : const Icon(Icons.image_not_supported),
+        title: Text(
+          comic.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          comic.description,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailComic(comicID: comic.id),
+            ),
+          ).then((refresh) {
+            if (refresh == true) {
+              fetchData();
+            }
+          });
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Cari Komik - Baca Komik Disini',
-          style: TextStyle(
-            color: Colors.deepPurple,),
-    )),
-        body: ListView(children: <Widget>[
-          TextFormField(
-            decoration: const InputDecoration(
-              icon: Icon(Icons.search),
-              labelText: 'Judul mengandung kata:',
+      appBar: AppBar(
+        title: const Text('Cari Komik - Baca Komik Disini'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Cari komik...',
+                border: OutlineInputBorder(),
+              ),
+              onFieldSubmitted: (value) {
+                setState(() {
+                  searchQuery = value;
+                  isLoading = true;
+                });
+                fetchData();
+              },
             ),
-            onFieldSubmitted: (value) {
-              _txtcari = value;
-              PCs.clear();
-              bacaData();
-            },
           ),
-          Container(
-              height: MediaQuery.of(context).size.height - 100,
-              child: PCs.length > 0
-                  ? DaftarComicList(PCs)
-                  : Text('tidak ada data'))
-        ]));
+          Expanded(
+            child: isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : errorMessage.isNotEmpty
+                    ? Center(child: Text(errorMessage))
+                    : ListView.builder(
+                        itemCount: comics.length,
+                        itemBuilder: (context, index) =>
+                            buildComicCard(comics[index]),
+                      ),
+          ),
+        ],
+      ),
+    );
   }
 }
