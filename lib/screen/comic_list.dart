@@ -31,6 +31,7 @@ class _ComicListState extends State<ComicList> {
   }
 
   bacaData() {
+    PCs.clear();
     Future<String> data = fetchData();
     data.then((value) {
       Map json = jsonDecode(value);

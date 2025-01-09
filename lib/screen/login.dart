@@ -12,9 +12,9 @@ class MyLogin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Komiku - Baca Komik',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepPurple,
       ),
       home: Login(),
     );
@@ -60,7 +60,9 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Login'),
+          backgroundColor: Colors.indigo,
+          titleTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold,),
+          title: Text('KOMIKU'),
         ),
         body: Container(
           height: 300,
@@ -80,8 +82,8 @@ class _LoginState extends State<Login> {
                 },
                 decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Email',
-                    hintText: 'Enter valid email id as abc@gmail.com'),
+                    labelText: 'User ID',
+                    hintText: 'Enter user id'),
               ),
             ),
             Padding(

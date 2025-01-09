@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uas_komiku/screen/category_screen.dart';
+import 'package:uas_komiku/screen/comic_add.dart';
 import 'package:uas_komiku/screen/comic_list.dart';
 import 'package:uas_komiku/screen/login.dart';
 
@@ -38,13 +39,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       routes: {
         'ComicList': (context) => const ComicList(),
+        'NewComic': (context) => const NewComic(),
       },
-      title: 'Flutter Demo',
+      title: 'Komiku - Baca Komik',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Komiku - Baca Komik'),
     );
   }
 }
@@ -142,10 +144,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           ListTile(
-            title: const Text("Comic List"),
-            leading: const Icon(Icons.book),
+            title: const Text("Tambah Komik Baru"),
+            leading: const Icon(Icons.library_add),
             onTap: () {
-              Navigator.pushNamed(context, "ComicList");
+              Navigator.pushNamed(context, "NewComic");
             },
           ),
           ListTile(
