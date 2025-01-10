@@ -177,13 +177,22 @@ class _DetailComicState extends State<DetailComic> {
         ),
         if(comic != null)
           Padding(
-            padding: const EdgeInsets.all(10),
-            child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: comic!.pages?.length,
-                itemBuilder: (BuildContext ctxt, int index) {
-                  return Image.network("https://ubaya.xyz/flutter/160421021/uas/"+comic?.pages?[index]);
-                })),
+          padding: const EdgeInsets.all(10), // Padding around the entire ListView
+          child: ListView.builder(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero, // Remove extra padding from the ListView
+            itemCount: comic!.pages?.length,
+            itemBuilder: (BuildContext ctxt, int index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2), // Small gap between items
+                child: Image.network(
+                  "https://ubaya.xyz/flutter/160421021/uas/" + comic?.pages?[index],
+                  fit: BoxFit.cover, // Ensure the image fits well
+                ),
+              );
+            },
+          ),
+        ),
         Card(
           elevation: 10,
           margin: const EdgeInsets.all(10),
