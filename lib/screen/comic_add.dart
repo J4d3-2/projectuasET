@@ -23,7 +23,6 @@ class _NewComicState extends State<NewComic> {
   final _controllerDate = TextEditingController();
   String _img = "";
   int comicID = 0;
-  bool _isSubmitted = false;
 
   Komik? _pc;
 
@@ -65,9 +64,6 @@ class _NewComicState extends State<NewComic> {
     _pc = Komik.fromJson(json['data']);
     setState(() {
       generateComboGenre();
-      if(!_isSubmitted){
-        _isSubmitted = true;
-      }
     });
     });
   }
@@ -99,7 +95,7 @@ class _NewComicState extends State<NewComic> {
     }
   }
 
-   Future<List> daftarGenre() async {
+  Future<List> daftarGenre() async {
     Map json;
     final response = await http.post(
     Uri.parse("https://ubaya.xyz/flutter/160421021/uas/dropdowncategorylist.php"),
@@ -244,7 +240,7 @@ class _NewComicState extends State<NewComic> {
   void uploadScene64() async {
     String base64Image = base64Encode(_imageBytes!);
     final response = await http.post(
-      Uri.parse("https://ubaya.xyz/flutter/160421021/uploadscene64.php"),
+      Uri.parse("https://ubaya.xyz/flutter/160421021/uas/uploadcomicpages.php"),
       body: {
         'comic_id': comicID.toString(),
         'image': base64Image,
@@ -255,7 +251,7 @@ class _NewComicState extends State<NewComic> {
     if (json['result'] == 'success') {
           if (!mounted) return;
       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Sukses mengupload Scene')));
+        .showSnackBar(SnackBar(content: Text('Sukses mengupload Page')));
         setState(() {
           _imageBytes = null;
           bacaData();
@@ -268,7 +264,7 @@ class _NewComicState extends State<NewComic> {
 
   void deleteScene64(filepath) async {
     final response = await http.post(
-      Uri.parse("https://ubaya.xyz/flutter/160421021/deletescene64.php"),
+      Uri.parse("https://ubaya.xyz/flutter/160421021/uas/deletecomicpages.php"),
       body: {'filepath': filepath.toString()
     });
     if (response.statusCode == 200) {
@@ -276,7 +272,7 @@ class _NewComicState extends State<NewComic> {
     Map json = jsonDecode(response.body);
     if (json['result'] == 'success') {
       ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Sukses menghapus scene')));
+        .showSnackBar(SnackBar(content: Text('Sukses menghapus Page')));
       setState(() {
         bacaData();
       });
@@ -290,7 +286,7 @@ class _NewComicState extends State<NewComic> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Cari Komik - Baca Komik Disini',
+          title: Text('Tambah Komik',
           style: GoogleFonts.arvo(color: Colors.deepPurple)),
         ),
         body: Form(
@@ -426,12 +422,12 @@ class _NewComicState extends State<NewComic> {
                   child: Text('Submit'),
                 ),
               ),
-              if (_isSubmitted)
+              if (comicID != 0)
                 Padding(
                   padding: EdgeInsets.all(10),
                   child: Text('Kategori:'),
                 ),
-              if(_pc != null)
+                if(_pc != null)
                 Padding(
                 padding: EdgeInsets.all(10),
                 child: ListView.builder(
@@ -441,10 +437,10 @@ class _NewComicState extends State<NewComic> {
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(_pc!.categories![index]['genre_name']),
+                        Text(_pc!.categories![index]['name']),
                          ElevatedButton(
                         onPressed: () {
-                          deleteGenre(_pc!.categories![index]['genre_id']);
+                          deleteGenre(_pc!.categories![index]['id']);
                         },
                         child: Icon(
                           Icons.remove_circle_outline,
@@ -454,6 +450,56 @@ class _NewComicState extends State<NewComic> {
                           ],
                     );
               })),
+              if (comicID != 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: comboGenre),
+              if (comicID != 0)
+                const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: Text("Pages: ")),
+              if(_pc != null)
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _pc!.pages?.length ?? 0,
+                    itemBuilder: (BuildContext ctxt, int index) {
+                      return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Image.network("https://ubaya.xyz/flutter/160421021/uas/"+_pc?.pages?[index]),
+                        ElevatedButton(
+                          onPressed: () {
+                            deleteScene64(_pc!.pages?[index]);
+                          },
+                        child: Icon(
+                          Icons.remove_circle_outline,
+                          color: Colors.red,
+                          size: 24.0,
+                        ))
+                          ],
+                    );
+                    })),
+              if (comicID != 0)
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: ElevatedButton(
+                  onPressed: () {
+                    _showPicker(context);
+                  },
+                  child: const Text('Pick Pages'),
+                  ),
+                ),
+                if(_imageBytes!=null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Image.memory(_imageBytes!)),
+                if(_imageBytes!=null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: ElevatedButton(child: const Text("Upload"),
+                    onPressed: () => uploadScene64())),
             ],
           ),)
         ));

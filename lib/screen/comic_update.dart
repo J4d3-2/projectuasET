@@ -83,7 +83,7 @@ class EditComicState extends State<EditComic> {
       body: {
       'title': _pc!.title,
       'author': _pc!.author,
-      'release_date': _pc!.releaseAt,          
+      'release_at': _pc!.releaseAt,          
       'description':_pc!.description.toString(),
       'img':_imgCont.text,
       'comic_id': widget.comicID.toString()

@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:uas_komiku/class/komik.dart';
 import 'package:uas_komiku/main.dart';
@@ -20,7 +21,7 @@ class _DetailComicState extends State<DetailComic> {
   bool isLoading = true; // Indikator loading
   String errorMessage = ''; // Pesan error
   String _comment = '';
-  double _rating = 0;
+  int _rating = 0;
 
   @override
   void initState() {
@@ -64,10 +65,10 @@ class _DetailComicState extends State<DetailComic> {
 
   void postComment() async {
     final response = await http
-        .post(Uri.parse("https://ubaya.xyz/flutter/160421021/uas/newcomment.php"), body: {
+        .post(Uri.parse("https://ubaya.xyz/flutter/160421021/uas/addreact.php"), body: {
       'comic_id': widget.comicID.toString(),
       'user_id': active_user,
-      'rating': _rating,
+      'rating': _rating.toString(),
       'komentar': _comment,
     });
     if (response.statusCode == 200) {
@@ -77,7 +78,7 @@ class _DetailComicState extends State<DetailComic> {
         };
         if (!mounted) return;
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Sukses Memberi Kometar')));
+            .showSnackBar(SnackBar(content: Text('Sukses Memberi Reaksi')));
       } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error')));
@@ -136,6 +137,9 @@ class _DetailComicState extends State<DetailComic> {
                 Text('Penulis: ${comic!.author}',
                     style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 8),
+                Text('Rating: ${comic!.rating}',
+                    style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 8),
                 Text('Deskripsi:',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(comic!.description),
@@ -177,7 +181,25 @@ class _DetailComicState extends State<DetailComic> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
+                Padding(
+                padding: EdgeInsets.all(10),
+                child: TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Berikan Rating',
+                ),
+                inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                ],
+                onChanged: (value) {
+                  _rating = int.tryParse(value) ?? 0;
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Rating harus diisi';
+                  }
+                  return null;
+                },
+              )),
                 Padding(
                 padding: EdgeInsets.all(10),
                 child: TextFormField(
@@ -202,12 +224,26 @@ class _DetailComicState extends State<DetailComic> {
                       ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Harap Komentar diperbaiki')));
                   } else{
-                    //postComment();
+                    postComment();
                   }
                   },
                   child: Text('Post'),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: comic!.reacts?.length,
+                    itemBuilder: (BuildContext ctxt, int index) {
+                      return ListTile(
+                        title: Text(
+                          "${comic!.reacts?[index]['user_name']} - ${comic!.reacts?[index]['rating']}",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(comic!.reacts?[index]['comment']),
+                      );
+                    })),
               ]
             ),
           ),
@@ -219,7 +255,8 @@ class _DetailComicState extends State<DetailComic> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Komik'),
+        title: Text(comic!.title, 
+        style: GoogleFonts.arvo(color: Colors.deepPurple),),
       ),
       body: isLoading
           ? const Center(
