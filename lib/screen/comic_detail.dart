@@ -126,14 +126,19 @@ class _DetailComicState extends State<DetailComic> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                comic!.img.isNotEmpty
-                    ? Image.network(
-                        comic!.img,
-                        width: 200,
-                        height: 300,
-                        fit: BoxFit.cover,
-                      )
-                    : const Icon(Icons.image_not_supported, size: 100),
+                Center(
+                  child: comic!.img.isNotEmpty
+                      ? Image.network(
+                          comic!.img,
+                          width: 200,
+                          height: 300,
+                          fit: BoxFit.cover,
+                        )
+                      : const Icon(
+                          Icons.image_not_supported,
+                          size: 100,
+                        ),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   comic!.title,
