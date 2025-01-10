@@ -129,7 +129,7 @@ class _DetailComicState extends State<DetailComic> {
                 comic!.img.isNotEmpty
                     ? Image.network(
                         comic!.img,
-                        width: double.infinity,
+                        width: 200,
                         height: 300,
                         fit: BoxFit.cover,
                       )
