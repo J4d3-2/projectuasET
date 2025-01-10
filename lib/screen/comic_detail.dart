@@ -35,7 +35,7 @@ class _DetailComicState extends State<DetailComic> {
       isLoading = true;
       errorMessage = '';
     });
-    
+
     try {
       final response = await http.post(
         Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
@@ -261,7 +261,7 @@ class _DetailComicState extends State<DetailComic> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(comic!.title, 
+        title: Text('Detail Komik', 
         style: GoogleFonts.arvo(color: Colors.deepPurple),),
       ),
       body: isLoading

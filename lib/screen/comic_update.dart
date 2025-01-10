@@ -320,7 +320,7 @@ class EditComicState extends State<EditComic> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Edit Komik - ${_pc!.title}',
+          title: Text('Edit Komik',
           style: GoogleFonts.arvo(color: Colors.deepPurple)),
         ),
         body: Form(
