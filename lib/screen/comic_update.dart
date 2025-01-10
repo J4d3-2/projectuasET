@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:uas_komiku/class/komik.dart';
@@ -31,17 +32,37 @@ class EditComicState extends State<EditComic> {
   Widget comboGenre = Text('Edit Kategori');
 
   Uint8List? _imageBytes;
+  bool isLoading = true;
+  String errorMessage = '';
 
 
   Future<String> fetchData() async {
-    final response = await http.post(
-      Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
-      body: {'id': widget.comicID.toString()});
-    if (response.statusCode == 200) {
-    return response.body;
-    } else {
-    throw Exception('Failed to read API');
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+    try{
+        final response = await http.post(
+          Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
+          body: {'id': widget.comicID.toString()});
+        if (response.statusCode == 200) {
+          return response.body;
+        } else {
+          errorMessage = 'Data komik tidak ditemukan.';
+          throw Exception('Failed to read API');
+        } 
     }
+    catch (e){
+      setState(() {
+        errorMessage = 'Kesalahan koneksi: $e';
+      });
+      throw Exception('Error during fetchData: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+    
   }
 
   bacaData() {
@@ -299,14 +320,15 @@ class EditComicState extends State<EditComic> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Edit Komik"),
+          title: Text('Edit Komik - ${_pc!.title}',
+          style: GoogleFonts.arvo(color: Colors.deepPurple)),
         ),
         body: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
             children: <Widget>[
-              Text(widget.comicID.toString()),
+              //Text(widget.comicID.toString()),
               Padding(
                 padding: EdgeInsets.all(10),
                 child: TextFormField(

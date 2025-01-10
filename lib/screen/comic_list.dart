@@ -88,7 +88,8 @@ class _ComicListState extends State<ComicList> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          comic.description,
+          'Rating: ${comic.rating.toString()}',
+          style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),

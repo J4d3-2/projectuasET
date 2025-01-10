@@ -22,6 +22,7 @@ class _DetailComicState extends State<DetailComic> {
   String errorMessage = ''; // Pesan error
   String _comment = '';
   int _rating = 0;
+  
 
   @override
   void initState() {
@@ -30,6 +31,11 @@ class _DetailComicState extends State<DetailComic> {
   }
 
   Future<void> fetchComicData() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+    
     try {
       final response = await http.post(
         Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),

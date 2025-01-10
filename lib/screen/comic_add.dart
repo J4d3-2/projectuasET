@@ -23,6 +23,8 @@ class _NewComicState extends State<NewComic> {
   final _controllerDate = TextEditingController();
   String _img = "";
   int comicID = 0;
+  bool isLoading = true;
+  String errorMessage = '';
 
   Komik? _pc;
 
@@ -48,14 +50,32 @@ class _NewComicState extends State<NewComic> {
   }
 
   Future<String> fetchData() async {
-    final response = await http.post(
-      Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
-      body: {'id': comicID.toString()});
-    if (response.statusCode == 200) {
-    return response.body;
-    } else {
-    throw Exception('Failed to read API');
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+    try{
+        final response = await http.post(
+          Uri.parse("https://ubaya.xyz/flutter/160421021/uas/detailcomic.php"),
+          body: {'id': comicID.toString()});
+        if (response.statusCode == 200) {
+          return response.body;
+        } else {
+          errorMessage = 'Data komik tidak ditemukan.';
+          throw Exception('Failed to read API');
+        } 
     }
+    catch (e){
+      setState(() {
+        errorMessage = 'Kesalahan koneksi: $e';
+      });
+      throw Exception('Error during fetchData: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+    
   }
 
   bacaData() {
